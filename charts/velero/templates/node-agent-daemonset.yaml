@@ -92,6 +92,7 @@ spec:
         {{- toYaml .Values.nodeAgent.extraVolumes | nindent 8 }}
         {{- end }}
       dnsPolicy: {{ .Values.nodeAgent.dnsPolicy }}
+      hostNetwork: {{ .Values.hostNetwork }}
       containers:
         - name: node-agent
         {{- if .Values.image.digest }}
