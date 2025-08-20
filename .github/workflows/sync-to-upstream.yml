@@ -2,7 +2,7 @@
 name: Sync with Upstream
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 0 * * 0'
   workflow_dispatch:
 jobs:
   sync:
@@ -11,7 +11,47 @@ jobs:
     - name: Sync Fork with Upstream Action
       uses: jackthenewbie/gitea-action-composite/.github/actions/sync-upstream@main
       with:
-        token: ${{ secrets.TOKEN }}
+        token: ${{ secrets.GITHUB_TOKEN }}
         upstream_repo_url: 'https://github.com/vmware-tanzu/helm-charts.git'
         target_branch: 'main'
         upstream_branch: 'main'
+    - name: Sleep for 30 seconds
+      run: sleep 30s # sleeps for 30 seconds
+      shell: bash
+    - name: Sync Fork with Upstream Action
+      uses: jackthenewbie/gitea-action-composite/.github/actions/sync-upstream@main
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        upstream_repo_url: 'https://github.com/vmware-tanzu/helm-charts.git'
+        target_branch: 'ci'
+        upstream_branch: 'ci'
+    - name: Sleep for 30 seconds
+      run: sleep 30s # sleeps for 30 seconds
+      shell: bash
+    - name: Sync Fork with Upstream Action
+      uses: jackthenewbie/gitea-action-composite/.github/actions/sync-upstream@main
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        upstream_repo_url: 'https://github.com/vmware-tanzu/helm-charts.git'
+        target_branch: 'gh-pages'
+        upstream_branch: 'gh-pages'
+    - name: Sleep for 30 seconds
+      run: sleep 30s # sleeps for 30 seconds
+      shell: bash
+    - name: Sync Fork with Upstream Action
+      uses: jackthenewbie/gitea-action-composite/.github/actions/sync-upstream@main
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        upstream_repo_url: 'https://github.com/vmware-tanzu/helm-charts.git'
+        target_branch: 'maintainer'
+        upstream_branch: 'maintainer'
+    - name: Sleep for 30 seconds
+      run: sleep 30s # sleeps for 30 seconds
+      shell: bash
+    - name: Sync Fork with Upstream Action
+      uses: jackthenewbie/gitea-action-composite/.github/actions/sync-upstream@main
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        upstream_repo_url: 'https://github.com/vmware-tanzu/helm-charts.git'
+        target_branch: 'master'
+        upstream_branch: 'master'
