@@ -49,30 +49,24 @@ jobs:
 
       - name: Delete existing GHCR velero version
         env:
-          GH_TOKEN: ${{ secrets.GHCR_TOKEN }}   # PAT with delete:packages
+          GH_TOKEN: ${{ secrets.GHCR_TOKEN }}   # PAT with delete:packages + read:packages
           OWNER: ${{ github.repository_owner }}
         run: |
           set -euo pipefail
           CHART_VERSION=$(yq '.version' charts/velero/Chart.yaml)
-          PKG_ENC=$(printf '%s' 'charts/velero' | jq -sRr @uri)  # charts%2Fvelero
+          PKG_ENC="charts%2Fvelero"
         
-          OWNER_TYPE=$(gh api repos/${GITHUB_REPOSITORY} --jq .owner.type)
-          if [ "$OWNER_TYPE" = "User" ]; then
-            OWNER_PATH="users/${OWNER}"
-          else
-            OWNER_PATH="orgs/${OWNER}"
-          fi
-        
-          VERSION_ID=$(gh api "/$OWNER_PATH/packages/container/$PKG_ENC/versions?per_page=100" \
+          VERSION_ID=$(gh api "/users/${OWNER}/packages/container/${PKG_ENC}/versions?per_page=100" \
             --jq ".[] | select(.metadata.container.tags[]? == \"$CHART_VERSION\") | .id" \
-            2>/dev/null || true)
+            || true)
         
           if [ -n "${VERSION_ID:-}" ]; then
-            gh api -X DELETE "/$OWNER_PATH/packages/container/$PKG_ENC/versions/$VERSION_ID"
-            echo "Deleted charts/velero:$CHART_VERSION (id $VERSION_ID)"
+            echo "Deleting GHCR package version id=$VERSION_ID for charts/velero:$CHART_VERSION"
+            gh api -X DELETE "/users/${OWNER}/packages/container/${PKG_ENC}/versions/${VERSION_ID}"
           else
-            echo "No GHCR version charts/velero:$CHART_VERSION"
+            echo "No GHCR version found for charts/velero:$CHART_VERSION"
           fi
+
 
 
 
