@@ -4,10 +4,10 @@ kubeVersion: ">=1.16.0-0"
 description: A Helm chart for velero
 name: velero
 version: 10.1.0
-home: https://github.com/vmware-tanzu/velero
+home: https://github.com/jackthenewbie/velero
 icon: https://cdn-images-1.medium.com/max/1600/1*-9mb3AKnKdcL_QD3CMnthQ.png
 sources:
-  - https://github.com/vmware-tanzu/velero
+  - https://github.com/jackthenewbie/velero
 maintainers:
   - name: jenting
     email: hsiaoairplane@gmail.com
