@@ -33,34 +33,6 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-      - name: Clean up old GHCR velero versions
-        env:
-          GH_TOKEN: ${{ secrets.GHCR_TOKEN }}   # PAT with delete:packages + read:packages
-          OWNER: ${{ github.repository_owner }}
-        run: |
-          set -euo pipefail
-          CHART_VERSION=$(yq '.version' charts/velero/Chart.yaml)
-          PKG_ENC="charts%2Fvelero"
-
-          VERSION_IDS_TO_DELETE=$(gh api "/users/${OWNER}/packages/container/${PKG_ENC}/versions?per_page=100" \
-            --jq "[.[] | select(.metadata.container.tags[]? == \"$CHART_VERSION\")] | sort_by(.created_at) | .[:-1] | .[] | .id" \
-            || true)
-
-          if [ -n "${VERSION_IDS_TO_DELETE:-}" ]; then
-            echo "Found old GHCR package versions to delete for charts/velero:$CHART_VERSION"
-
-            for VERSION_ID in $VERSION_IDS_TO_DELETE; do
-              echo "Deleting old GHCR package version id=$VERSION_ID"
-              gh api -X DELETE "/users/${OWNER}/packages/container/${PKG_ENC}/versions/${VERSION_ID}"
-            done
-          else
-            echo "No old GHCR package versions to clean up for charts/velero:$CHART_VERSION"
-          fi
-
-
-
-
-
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.2.0
         env:
@@ -82,3 +54,33 @@ jobs:
 
             helm push "${pkg}" oci://ghcr.io/${GITHUB_REPOSITORY_OWNER}/charts
           done
+
+      # --- THEN THIS STEP RUNS, USING YOUR ORIGINAL SCRIPT ---
+      - name: Delete existing GHCR velero version
+        env:
+          GH_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+          CHART_VERSION=$(yq '.version' charts/velero/Chart.yaml)
+          PKG_ENC="charts%2Fvelero"
+        
+          VERSION_ID=$(gh api "/users/${OWNER}/packages/container/${PKG_ENC}/versions?per_page=100" \
+            --jq ".[] | select(.metadata.container.tags[]? == \"$CHART_VERSION\") | .id" \
+            || true)
+        
+          if [ -n "${VERSION_ID:-}" ]; then
+            # This will now target the OLD version, because the tag moved to the new one.
+            # To be safe, let's delete all but the most recent.
+            # Get a list of all version IDs with the target tag, sorted oldest-to-newest.
+            VERSION_IDS_TO_DELETE=$(gh api "/users/${OWNER}/packages/container/${PKG_ENC}/versions?per_page=100" \
+              --jq "[.[] | select(.metadata.container.tags[]? == \"$CHART_VERSION\")] | sort_by(.created_at) | .[:-1] | .[] | .id" \
+              || true)
+
+            for ID in $VERSION_IDS_TO_DELETE; do
+              echo "Deleting old GHCR package version id=$ID for charts/velero:$CHART_VERSION"
+              gh api -X DELETE "/users/${OWNER}/packages/container/${PKG_ENC}/versions/${ID}"
+            done
+          else
+            echo "No old GHCR version found to clean up for charts/velero:$CHART_VERSION"
+          fi
