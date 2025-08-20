@@ -25,10 +25,45 @@ jobs:
         with:
           version: 3.13.2
 
+      - name: Install yq
+        uses: mikefarah/yq@v4
+
       - name: Configure Git
         run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Delete existing GitHub Release
+        run: |
+          set -e
+          CHART_VERSION=$(yq '.version' charts/velero/Chart.yaml)
+          RELEASE_TAG="velero-$CHART_VERSION"
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Deleting old GitHub release $RELEASE_TAG"
+            gh release delete "$RELEASE_TAG" -y
+          else
+            echo "No GitHub release found for $RELEASE_TAG"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete existing GHCR chart version
+        run: |
+          set -e
+          CHART_VERSION=$(yq '.version' charts/velero/Chart.yaml)
+          PACKAGE_NAME=charts
+
+          VERSION_ID=$(gh api /users/${GITHUB_REPOSITORY_OWNER}/packages/container/$PACKAGE_NAME/versions \
+            --jq ".[] | select(.metadata.container.tags[]? == \"$CHART_VERSION\") | .id" || true)
+
+          if [ -n "$VERSION_ID" ]; then
+            echo "Deleting old GHCR chart version $VERSION_ID"
+            gh api -X DELETE /users/${GITHUB_REPOSITORY_OWNER}/packages/container/$PACKAGE_NAME/versions/$VERSION_ID
+          else
+            echo "No GHCR version found for $CHART_VERSION"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.2.0
