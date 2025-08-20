@@ -6,7 +6,7 @@ entries:
     created: "2025-08-20T21:45:55.132831662Z"
     description: A Helm chart for velero
     digest: 4803dd920fb11c6a5f81763fd5b32ecc7625515d8d50ab47183e32cef0091e98
-    home: https://github.com/vmware-tanzu/velero
+    home: https://github.com/jackthenewbie/velero
     icon: https://cdn-images-1.medium.com/max/1600/1*-9mb3AKnKdcL_QD3CMnthQ.png
     kubeVersion: '>=1.16.0-0'
     maintainers:
@@ -18,7 +18,7 @@ entries:
       name: ywk253100
     name: velero
     sources:
-    - https://github.com/vmware-tanzu/velero
+    - https://github.com/jackthenewbie/velero
     urls:
     - https://github.com/jackthenewbie/helm-charts/releases/download/velero-10.1.0/velero-10.1.0.tgz
     version: 10.1.0
