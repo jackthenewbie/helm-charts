@@ -104,6 +104,9 @@
         "dnsPolicy": {
             "type": "string"
         },
+        "hostNetwork":{
+            "type": "boolean"
+        },
         "initContainers": {
             "type": ["array", "null"],
             "items": {}
@@ -721,6 +724,9 @@
                 "dnsPolicy": {
                     "type": "string"
                 },
+                "hostNetwork": {
+                    "type": "boolean"
+                },
                 "podSecurityContext": {
                     "type": "object",
                     "properties": {},
@@ -759,7 +765,8 @@
             },
             "required": [
                 "podVolumePath",
-                "dnsPolicy"
+                "dnsPolicy",
+                "hostNetwork"
             ]
         },
         "schedules": {
@@ -777,6 +784,7 @@
         "image",
         "upgradeCRDsJob",
         "dnsPolicy",
+        "hostNetwork",
         "metrics",
         "kubectl",
         "configuration",

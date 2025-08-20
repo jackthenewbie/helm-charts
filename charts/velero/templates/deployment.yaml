@@ -282,6 +282,7 @@ spec:
           lifecycle: {{ toYaml .Values.lifecycle | nindent 12 }}
           {{- end }}
       dnsPolicy: {{ .Values.dnsPolicy }}
+      hostNetwork: {{ .Values.hostNetwork }}
 {{- if .Values.initContainers }}
       initContainers:
         {{- if eq (typeOf .Values.initContainers) "string" }}

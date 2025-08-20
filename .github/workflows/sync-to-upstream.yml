@@ -1,0 +1,17 @@
+#.github/workflows/sync-to-upstream.yml
+name: Sync with Upstream
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Sync Fork with Upstream Action
+      uses: jackthenewbie/gitea-action-composite/.github/actions/sync-upstream@main
+      with:
+        token: ${{ secrets.TOKEN }}
+        upstream_repo_url: 'https://github.com/vmware-tanzu/helm-charts.git'
+        target_branch: 'main'
+        upstream_branch: 'main'
