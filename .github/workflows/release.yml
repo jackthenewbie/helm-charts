@@ -53,17 +53,27 @@ jobs:
           CHART_VERSION=$(yq '.version' charts/velero/Chart.yaml)
           PACKAGE_NAME=charts
 
-          VERSION_ID=$(gh api /users/${GITHUB_REPOSITORY_OWNER}/packages/container/$PACKAGE_NAME/versions \
+          # Decide whether this repo belongs to a user or org
+          OWNER_TYPE=$(gh api repos/${GITHUB_REPOSITORY} --jq .owner.type)
+
+          if [ "$OWNER_TYPE" = "User" ]; then
+            OWNER_PATH="users/${GITHUB_REPOSITORY_OWNER}"
+          else
+            OWNER_PATH="orgs/${GITHUB_REPOSITORY_OWNER}"
+          fi
+
+          VERSION_ID=$(gh api /$OWNER_PATH/packages/container/$PACKAGE_NAME/versions \
             --jq ".[] | select(.metadata.container.tags[]? == \"$CHART_VERSION\") | .id" || true)
 
           if [ -n "$VERSION_ID" ]; then
             echo "Deleting old GHCR chart version $VERSION_ID"
-            gh api -X DELETE /users/${GITHUB_REPOSITORY_OWNER}/packages/container/$PACKAGE_NAME/versions/$VERSION_ID
+            gh api -X DELETE /$OWNER_PATH/packages/container/$PACKAGE_NAME/versions/$VERSION_ID
           else
             echo "No GHCR version found for $CHART_VERSION"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.2.0
